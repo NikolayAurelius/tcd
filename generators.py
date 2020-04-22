@@ -28,7 +28,7 @@ def base_generator(batch_size, is_val=False, dtype=np.float32):
         filenames = mfilenames[::3]
     else:
         filenames = list(set(mfilenames) - set(mfilenames[::3]))
-
+    print(filenames)
     while True:
         curr_filenames = set()
 
@@ -72,14 +72,16 @@ def base_generator(batch_size, is_val=False, dtype=np.float32):
             xs.append(x)
             ys.append(y)
 
-        xs = np.array(xs, dtype=dtype)
-        xs = [xs[:, i, :, :, :] for i in range(18 * 8)]
-        #ys = [np.array(ys), np.zeros(1, dtype=dtype)]
-        ys = [np.zeros(1, dtype=dtype), np.zeros(1, dtype=dtype), np.zeros(1, dtype=dtype), np.array(ys, dtype=dtype)]
-        xs.append(ys)
+        xs = np.expand_dims(np.array(xs, dtype=dtype), axis=5)
+        xs = [xs[:, i, :, :, :, :] for i in range(18 * 8)]
+        y = np.array(ys, dtype=dtype)
+        ys = [np.zeros((batch_size, 1), dtype=dtype), np.zeros((batch_size, 1), dtype=dtype), np.zeros((batch_size, 1), dtype=dtype)]
+        for _ in range((8 + 1) * 2):
+            ys.append(y)
 
+        xs.append(y)
         yield xs, ys
 
 
-# xs, ys = next(base_generator(2))
+#  xs, ys = next(base_generator(2))
 

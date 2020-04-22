@@ -38,8 +38,21 @@ batch_size = 32
 start_lr = 0.1 ** 5
 optimizer = Nadam
 
+losses = {}
+metrics = {}
+weights = {}
 
-model.compile(optimizer=optimizer(start_lr), loss=None, metrics=None)
+for output in model.outputs:
+    name, _ = output.name.split('/')
+    if 'penalty' in output.name:
+        losses[name] = 'mse'
+        weights[name] = 0.01
+    else:
+        losses[name] = 'categorical_crossentropy'
+        metrics[name] = 'categorical_accuracy'
+        weights[name] = 1.0
+
+model.compile(optimizer=optimizer(start_lr), loss=losses, metrics=metrics, loss_weights=weights)
 
 model.fit_generator(generator=base_generator(batch_size),
                     steps_per_epoch=100,

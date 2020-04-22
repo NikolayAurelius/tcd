@@ -109,6 +109,9 @@ outputs = []
 for key in y.keys():
   outputs.extend(y[key])
 
+for key in y1.keys():
+  outputs.extend(y1[key])
+
 outputs.append(main0)
 outputs.append(main1)
 outputs.append(penalty_deviation0)
