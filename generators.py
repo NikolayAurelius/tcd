@@ -72,7 +72,9 @@ def base_generator(batch_size, is_val=False, dtype=np.float32):
             xs.append(x)
             ys.append(y)
 
-        xs = np.expand_dims(np.array(xs, dtype=dtype), axis=5)
+        xs = np.expand_dims(np.array(xs, dtype=dtype), axis=5) / np.amax(xs)
+        xs = xs - np.mean(xs)
+
         xs = [xs[:, i, :, :, :, :] for i in range(18 * 8)]
         y = np.array(ys, dtype=dtype)
         ys = [np.zeros((batch_size, 1), dtype=dtype), np.zeros((batch_size, 1), dtype=dtype), np.zeros((batch_size, 1), dtype=dtype)]

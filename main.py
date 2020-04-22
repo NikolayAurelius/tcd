@@ -55,9 +55,9 @@ for output in model.outputs:
 model.compile(optimizer=optimizer(start_lr), loss=losses, metrics=metrics, loss_weights=weights)
 
 model.fit_generator(generator=base_generator(batch_size),
-                    steps_per_epoch=100,
+                    steps_per_epoch=1024 // batch_size,
                     validation_data=base_generator(batch_size, is_val=True),
-                    validation_steps=100,
+                    validation_steps=512 // batch_size,
                     epochs=1000,
                     callbacks=callbacks,
-                    verbose=2)
+                    verbose=1)
