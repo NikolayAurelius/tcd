@@ -35,7 +35,7 @@ def create_shared_weights_bn(conv1, convs, input_shape):
 
 
 def super_Conv4D(filters, kernel_size, activation='linear', batch_normalization=False, dropout_rate=0.0, noise_rate=0.0,
-                 kernel_regularizer=None, bias_regularizer=None):
+                 kernel_regularizer=None, bias_regularizer=None, kernel_constraint=None):
     a, b, c, d = kernel_size
 
     def _res(npts_x0, npts_x3, npts_x6, npts_x9, npts_rev_x0, npts_rev_x3, npts_rev_x6, npts_rev_x9):
@@ -54,9 +54,9 @@ def super_Conv4D(filters, kernel_size, activation='linear', batch_normalization=
 
         for i in range(len(inputs['x0'])):
             main_conv = Conv3D(filters, kernel_size=(b, c, d), kernel_regularizer=kernel_regularizer,
-                               bias_regularizer=bias_regularizer)
+                               bias_regularizer=bias_regularizer, kernel_constraint=kernel_constraint)
             shared_convs = [Conv3D(filters, kernel_size=(b, c, d), kernel_regularizer=kernel_regularizer,
-                                   bias_regularizer=bias_regularizer) for _ in range(7)]
+                                   bias_regularizer=bias_regularizer, kernel_constraint=kernel_constraint) for _ in range(7)]
 
             create_shared_weights(main_conv, shared_convs, inputs['x0'][i].shape)
 
