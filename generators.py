@@ -28,7 +28,7 @@ def base_generator(batch_size, is_val=False, dtype=np.float32):
         filenames = mfilenames[::3]
     else:
         filenames = list(set(mfilenames) - set(mfilenames[::3]))
-    print(filenames)
+
     while True:
         curr_filenames = set()
 
