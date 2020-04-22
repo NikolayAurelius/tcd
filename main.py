@@ -58,6 +58,6 @@ model.fit_generator(generator=base_generator(batch_size),
                     steps_per_epoch=1024 // batch_size,
                     validation_data=base_generator(batch_size, is_val=True),
                     validation_steps=512 // batch_size,
-                    epochs=1000,
+                    epochs=3000,
                     callbacks=callbacks,
                     verbose=1)
