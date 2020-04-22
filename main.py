@@ -1,8 +1,8 @@
 from tensorflow.keras.callbacks import ReduceLROnPlateau, ModelCheckpoint, EarlyStopping, Callback, \
     LearningRateScheduler
 from tensorflow.keras.optimizers import Adam, Nadam
-from model import model
-from generators import base_generator
+from .model import model
+from .generators import base_generator
 import os
 from time import sleep
 from google.colab import drive

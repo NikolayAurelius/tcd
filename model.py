@@ -4,7 +4,7 @@ from tensorflow.keras.layers import Conv3D, Add, Input, BatchNormalization, Acti
 from tensorflow.keras.models import Model, load_model, Sequential
 from tensorflow.keras.regularizers import l2
 from tensorflow.keras.constraints import max_norm, MinMaxNorm, NonNeg
-from super_layers import super_Conv4D, super_Concatenate, super_Dense, super_Dropout, super_Flatten, super_MaxPooling4D
+from .super_layers import super_Conv4D, super_Concatenate, super_Dense, super_Dropout, super_Flatten, super_MaxPooling4D
 from tensorflow.keras.activations import relu
 import numpy as np
 
