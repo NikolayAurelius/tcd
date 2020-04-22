@@ -12,14 +12,14 @@ created timestamp, taken timestamp, completed timestamp, viewed timestamp, acces
 cur.execute(tasks)
 
 mammologic_dataset = """
-CREATE TABLE mammologic_dataset (id SERIAL, filename varchar(80), x int[][][][], number_of_dir int, 
-original_dir varchar(80), patient_name varchar(40), is_left boolean, main_target boolean)
+CREATE TABLE mammologic_dataset (id SERIAL PRIMARY KEY, filename varchar(80), x int[][][][], state varchar(6), 
+number_of_dir int, original_dir varchar(80), patient_name varchar(40), is_left boolean, main_target boolean)
 """
 
 cur.execute(mammologic_dataset)
 
 accuracy_by_model = """
-CREATE TABLE accuracy_by_model (id REFERENCES mammologic_dataset (id), model_name varchar(250), cancer_points int)
+CREATE TABLE accuracy_by_model (id int REFERENCES mammologic_dataset (id), model_name varchar(250), cancer_points int)
 """
 
 cur.execute(accuracy_by_model)
