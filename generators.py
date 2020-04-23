@@ -44,11 +44,28 @@ def base_generator(batch_size, is_val=False, dtype=np.float32):
 
         for row in cursor:
             x, y, state, filename = row
-            xy_by_filename[filename][state] = x
-            xy_by_filename[filename]['y'] = y
+            try:
+                if x is None or y is None:
+                    raise KeyError
+                xy_by_filename[filename][state] = x
+                xy_by_filename[filename]['y'] = y
+            except KeyError:
+                c = True
+
+        if c:
+            for filename in xy_by_filename.keys():
+                xy = xy_by_filename[filename]
+                b = False
+                for key in xy.keys():
+                    b = xy[key] is None or b
+
+                if b:
+                    xy_by_filename.pop(filename)
+
 
         xs = []
         ys = []
+        batch_size = len(xy_by_filename.keys())
 
         for filename in xy_by_filename.keys():
             xy = xy_by_filename[filename]
@@ -77,7 +94,9 @@ def base_generator(batch_size, is_val=False, dtype=np.float32):
 
         xs = [xs[:, i, :, :, :, :] for i in range(18 * 8)]
         y = np.array(ys, dtype=dtype)
-        ys = [np.zeros((batch_size, 1), dtype=dtype), np.zeros((batch_size, 1), dtype=dtype), np.zeros((batch_size, 1), dtype=dtype)]
+        ys = [np.zeros((batch_size, 1), dtype=dtype),
+              np.zeros((batch_size, 1), dtype=dtype),
+              np.zeros((batch_size, 1), dtype=dtype)]
         for _ in range((8 + 1) * 2):
             ys.append(y)
 
