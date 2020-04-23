@@ -82,10 +82,14 @@ def base_generator(batch_size, is_val=False, dtype=np.float32):
             else:
                 y[0] = 1.0  # healthy
 
-            x = np.array(xy.pop('x0'), dtype=dtype)
+            try:
+                x = np.array(xy.pop('x0'), dtype=dtype)
 
-            for key in order[1:]:
-                x = np.concatenate((x, xy.pop(key)), axis=0)
+                for key in order[1:]:
+                    x = np.concatenate((x, xy.pop(key)), axis=0)
+            except ValueError:
+                batch_size -= 1
+                continue
 
             xs.append(x)
             ys.append(y)
