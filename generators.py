@@ -42,6 +42,7 @@ def base_generator(batch_size, is_val=False, dtype=np.float32):
         xy_by_filename = {filename: {'y': None, 'x0': None, 'x3': None, 'x6': None, 'x9': None, 'rev_x0': None,
                                      'rev_x3': None, 'rev_x6': None, 'rev_x9': None} for filename in curr_filenames}
 
+        c = False
         for row in cursor:
             x, y, state, filename = row
             try:

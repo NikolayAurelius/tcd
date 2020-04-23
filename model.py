@@ -62,13 +62,13 @@ lst_y1 = [y1[key][0] for key in y1.keys()]
 
 
 def penalty_deviation_func(x):
-    v = 0.0
+    s = []
     for i in range(8):
         for j in range(8):
             if i + j > 8:
                 continue
-            v += tf.linalg.norm(x[i] - x[j], axis=1, keepdims=True)
-    return v
+            s.append(relu(tf.linalg.norm(x[i] - x[j], axis=1, keepdims=True), max_value=1000.0))
+    return sum(s)
 
 
 def standartify():
