@@ -66,7 +66,7 @@ def base_generator(batch_size, is_val=False, dtype=np.float32):
 
         xs = []
         ys = []
-        batch_size = len(xy_by_filename.keys())
+        bs = len(xy_by_filename.keys())
 
         for filename in xy_by_filename.keys():
             xy = xy_by_filename[filename]
@@ -88,7 +88,7 @@ def base_generator(batch_size, is_val=False, dtype=np.float32):
                 for key in order[1:]:
                     x = np.concatenate((x, xy.pop(key)), axis=0)
             except ValueError:
-                batch_size -= 1
+                bs -= 1
                 continue
 
             xs.append(x)
@@ -102,9 +102,9 @@ def base_generator(batch_size, is_val=False, dtype=np.float32):
 
         xs = [xs[:, i, :, :, :, :] for i in range(18 * 8)]
         y = np.array(ys, dtype=dtype)
-        ys = [np.zeros((batch_size, 1), dtype=dtype),
-              np.zeros((batch_size, 1), dtype=dtype),
-              np.zeros((batch_size, 1), dtype=dtype)]
+        ys = [np.zeros((bs, 1), dtype=dtype),
+              np.zeros((bs, 1), dtype=dtype),
+              np.zeros((bs, 1), dtype=dtype)]
         for _ in range((8 + 1) * 2):
             ys.append(y)
 
