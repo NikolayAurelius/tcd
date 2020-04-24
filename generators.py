@@ -94,10 +94,11 @@ def base_generator(batch_size, is_val=False, dtype=np.float32):
             xs.append(x)
             ys.append(y)
 
+        xs = np.array(xs, dtype=dtype)
         if len(xs.shape) < 4:
             continue
 
-        xs = np.expand_dims(np.array(xs, dtype=dtype), axis=5) / np.amax(xs)
+        xs = np.expand_dims(xs / np.amax(xs), axis=5)
         xs = xs - np.mean(xs)
 
         xs = [xs[:, i, :, :, :, :] for i in range(18 * 8)]
