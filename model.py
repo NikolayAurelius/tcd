@@ -72,27 +72,27 @@ def penalty_deviation_func(x):
 
 
 def standartify():
-  standartizator = Sequential()
-  standartizator.add(Input(shape=(2,)))
-  standartizator.add(Lambda(lambda x: relu(x - 0.4999) * 100))
-  return standartizator
+    standartizator = Sequential()
+    standartizator.add(Input(shape=(2,)))
+    standartizator.add(Lambda(lambda x: relu(x - 0.4999) * 100))
+    return standartizator
 
 
 def penalty_equals_error(name=f'penalty_equals_error{np.random.randint(0, 10000)}'):
-  y1_npt, y2_npt, y_true = Input(shape=(2,)), Input(shape=(2,)), Input(shape=(2,))
+    y1_npt, y2_npt, y_true = Input(shape=(2,)), Input(shape=(2,)), Input(shape=(2,))
 
-  y1 = standartify()(y1_npt)
-  y2 = standartify()(y2_npt)
-  y_false = Lambda(lambda x: (x - 1) * (-1))(y_true)
+    y1 = standartify()(y1_npt)
+    y2 = standartify()(y2_npt)
+    y_false = Lambda(lambda x: (x - 1) * (-1))(y_true)
 
-  d1 = Dot(axes=-1)([y1, y_false])
-  d2 = Dot(axes=-1)([y2, y_false])
+    d1 = Dot(axes=-1)([y1, y_false])
+    d2 = Dot(axes=-1)([y2, y_false])
 
-  res = Lambda(lambda x: x[0] * x[1])([d1, d2])
-  return Model(inputs=[y1_npt, y2_npt, y_true], outputs=res, name=name)
+    res = Lambda(lambda x: x[0] * x[1] / 10.0)([d1, d2])
+    return Model(inputs=[y1_npt, y2_npt, y_true], outputs=res, name=name)
 
 
-main0 = Average(name='main0')(lst_y)
+main0 = Average(name='main')(lst_y)
 main1 = Average(name='main1')(lst_y1)
 
 p = penalty_equals_error()([main0, main1, y_true_npt])

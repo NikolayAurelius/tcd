@@ -63,7 +63,6 @@ def base_generator(batch_size, is_val=False, dtype=np.float32):
                 if b:
                     xy_by_filename.pop(filename)
 
-
         xs = []
         ys = []
         bs = len(xy_by_filename.keys())
