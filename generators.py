@@ -54,7 +54,7 @@ def base_generator(batch_size, is_val=False, dtype=np.float32):
                 c = True
 
         if c:
-            for filename in xy_by_filename.keys():
+            for filename in list(xy_by_filename.keys()):
                 xy = xy_by_filename[filename]
                 b = False
                 for key in xy.keys():
@@ -67,7 +67,7 @@ def base_generator(batch_size, is_val=False, dtype=np.float32):
         ys = []
         bs = len(xy_by_filename.keys())
 
-        for filename in xy_by_filename.keys():
+        for filename in list(xy_by_filename.keys()):
             xy = xy_by_filename[filename]
             # c = False
             # for key in xy.keys():
