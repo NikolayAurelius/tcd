@@ -121,7 +121,7 @@ def file_to_x(path):
             else:
                 continue
 
-            one_x = np.zeros((18, 18))
+            one_x = np.zeros((18, 18), dtype=np.int16)
 
             line = line[:-2].split(';')
             line = list(map(int, line))
@@ -131,17 +131,17 @@ def file_to_x(path):
                     one_x[i, j] = line[i * 18 + j]
 
             lst.append(one_x)
-        x0 = np.zeros((18, 18, 18, 18))
-        rev_x0 = np.zeros((18, 18, 18, 18))
+        x0 = np.zeros((18, 18, 18, 18), dtype=np.int16)
+        rev_x0 = np.zeros((18, 18, 18, 18), dtype=np.int16)
 
-        x3 = np.zeros((18, 18, 18, 18))
-        rev_x3 = np.zeros((18, 18, 18, 18))
+        x3 = np.zeros((18, 18, 18, 18), dtype=np.int16)
+        rev_x3 = np.zeros((18, 18, 18, 18), dtype=np.int16)
 
-        x6 = np.zeros((18, 18, 18, 18))
-        rev_x6 = np.zeros((18, 18, 18, 18))
+        x6 = np.zeros((18, 18, 18, 18), dtype=np.int16)
+        rev_x6 = np.zeros((18, 18, 18, 18), dtype=np.int16)
 
-        x9 = np.zeros((18, 18, 18, 18))
-        rev_x9 = np.zeros((18, 18, 18, 18))
+        x9 = np.zeros((18, 18, 18, 18), dtype=np.int16)
+        rev_x9 = np.zeros((18, 18, 18, 18), dtype=np.int16)
 
         for i in range(18):
             for j in range(18):
@@ -173,7 +173,7 @@ def file_to_x(path):
             'rev_x9': rev_x9}
 
 
-print(file_to_x(paths_to_not_in_db[0])['x0'][6:12, 6:12, 6:12, 6:12])
+#print(file_to_x(paths_to_not_in_db[0])['x0'][6:12, 6:12, 6:12, 6:12])
 
 import pandas
 
@@ -186,8 +186,31 @@ for elem in paths_to_not_in_db:
 
     for key in list(dct_x.keys()):
         x = np.concatenate((x, dct_x.pop(key)), axis=0)
+    x = np.expand_dims(x, axis=4)
+    y = np.zeros(2, dtype=np.int16)
+    if diagnose == 'sick':
+        y[1] = 1
+    else:
+        y[0] = 1
 
-    print(x.shape)
+    df.loc[i] = [x, y]
+    i += 1
+####
+#save
+del df
+####
 
-    print(filename)
+df1 = pandas.DataFrame(columns=['big_x', 'main_target'])
+i = 0
+
+for elem in lst: # filenames in db
+    sql = f"""SELECT * FROM mammologic_dataset WHERE filename = '{elem}'"""
+    cursor.execute(sql)
+    #print(next(cursor))
+    for row in cursor:
+        identificator, filename, x, state, number, orig_dir, patient, is_left, main_target = row
+
+        print(identificator, state, main_target, is_left)
+
+    print(elem)
     break
