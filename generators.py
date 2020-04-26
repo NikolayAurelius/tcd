@@ -4,8 +4,10 @@ from psycopg2 import connect, ProgrammingError
 
 def choice(filenames, curr_filenames):
     filename = filenames[np.random.randint(0, len(filenames))]
-    while filename in curr_filenames:
+    k = 0
+    while filename in curr_filenames and k < 50:
         filename = filenames[np.random.randint(0, len(filenames))]
+        k += 1
     return filename
 
 
@@ -36,8 +38,13 @@ def base_generator(batch_size, is_val=False, dtype=np.float32):
             filename = choice(filenames, curr_filenames)
             curr_filenames.add(filename)
 
-        sql = f'SELECT x, main_target, state, filename FROM mammologic_dataset WHERE filename IN ({str(curr_filenames)[1:-1]})'
-        cursor.execute(sql)
+        try:
+            sql = f'SELECT x, main_target, state, filename FROM mammologic_dataset WHERE filename IN ({str(curr_filenames)[1:-1]})'
+            cursor.execute(sql)
+        except Exception as er:
+            print(er, batch_size, curr_filenames)
+            batch_size = 32
+            continue
 
         xy_by_filename = {filename: {'y': None, 'x0': None, 'x3': None, 'x6': None, 'x9': None, 'rev_x0': None,
                                      'rev_x3': None, 'rev_x6': None, 'rev_x9': None} for filename in curr_filenames}
@@ -99,6 +106,7 @@ def base_generator(batch_size, is_val=False, dtype=np.float32):
 
         xs = np.array(xs, dtype=dtype)
         if len(xs.shape) < 4:
+            print(f'{xs.shape} xs.shape')
             continue
 
         xs = np.expand_dims(xs / np.amax(xs), axis=5)
