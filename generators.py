@@ -100,7 +100,7 @@ def base_generator(batch_size, is_val=False, dtype=np.float32):
 
             try:
                 x = np.array(xy.pop('x0'), dtype=dtype)
-
+                print([(key, xy[key].shape) for key in xy.keys()])
                 for key in order[1:]:
                     x = np.concatenate((x, xy.pop(key)), axis=0)
             except ValueError as er:
