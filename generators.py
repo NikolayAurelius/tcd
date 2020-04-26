@@ -76,10 +76,14 @@ def base_generator(batch_size, is_val=False, dtype=np.float32):
                 if b:
                     xy_by_filename.pop(filename)
 
+            if len(xy_by_filename.keys()) == 0:
+                print(f'len(xy_by_filename.keys()) {len(xy_by_filename.keys())}')
+                continue
+
         xs = []
         ys = []
         bs = len(xy_by_filename.keys())
-
+        print('keys', bs, xy_by_filename.keys())
         for filename in list(xy_by_filename.keys()):
             xy = xy_by_filename[filename]
             # c = False
