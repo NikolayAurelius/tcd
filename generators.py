@@ -62,6 +62,8 @@ def base_generator(batch_size, is_val=False, dtype=np.float32):
                     c = True
         except ProgrammingError as er:
             print(er)
+            print(er, batch_size, curr_filenames)
+            batch_size = 32
             continue
 
         if c:
