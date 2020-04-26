@@ -86,12 +86,15 @@ def base_generator(batch_size, is_val=False, dtype=np.float32):
         print('keys', bs, xy_by_filename.keys())
         for filename in list(xy_by_filename.keys()):
             xy = xy_by_filename[filename]
-            # c = False
-            # for key in xy.keys():
-            #     c = xy[key] is None or c
-            #
-            # if c:
-            #     continue
+
+            c = False
+            for key in xy.keys():
+                c = xy[key] is None or c
+
+            if c:
+                bs -= 1
+                continue
+
             y = np.zeros(2, dtype=dtype)
             if xy.pop('y') is True:
                 y[1] = 1.0  # sick
@@ -102,7 +105,8 @@ def base_generator(batch_size, is_val=False, dtype=np.float32):
                 x = np.array(xy.pop('x0'), dtype=dtype)
                 print([(key, xy[key].shape) for key in xy.keys()])
                 for key in order[1:]:
-                    x = np.concatenate((x, xy.pop(key)), axis=0)
+                    next_x = np.array(xy.pop(key), dtype=dtype)
+                    x = np.concatenate((x, next_x), axis=0)
             except ValueError as er:
                 bs -= 1
                 print(er, bs)
