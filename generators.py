@@ -99,8 +99,9 @@ def base_generator(batch_size, is_val=False, dtype=np.float32):
 
                 for key in order[1:]:
                     x = np.concatenate((x, xy.pop(key)), axis=0)
-            except ValueError:
+            except ValueError as er:
                 bs -= 1
+                print(er, bs)
                 continue
 
             xs.append(x)
