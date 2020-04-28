@@ -141,7 +141,15 @@ def base_generator(batch_size, is_val=False, dtype=np.float32):
         yield xs, ys
 
 
-def generator(batch_size, dtype=np.float32):
+def generator(batch_size, is_val=False, dtype=np.float32):
+    if is_val:
+        with h5py.File('tcd/val_X.h5') as f:
+            val_X = f['val_X']
+        with h5py.File('tcd/val_Y.h5') as f:
+            val_Y = f['val_Y']
+
+        return val_X, val_Y
+
     filenames = set(os.listdir('tcd/dataset'))
 
     for filename in list(filenames):
@@ -166,7 +174,10 @@ def generator(batch_size, dtype=np.float32):
             with h5py.File(path_Y) as f:
                 Y = f['Y']
 
-            for k in range(X.shape[0]):
+            indexes = list(range(X.shape[0]))
+            np.random.shuffle(indexes)
+
+            for k in indexes:
                 curr_x = X[k]
                 curr_x /= np.max(curr_x)
                 curr_x -= np.mean(curr_x)
@@ -177,7 +188,7 @@ def generator(batch_size, dtype=np.float32):
                 if len(x) == batch_size:
                     break
 
-        x, y = np.array(x), np.array(y)
+        x, y = np.array(x, dtype=dtype), np.array(y, dtype=dtype)
         yield x, y
 
 

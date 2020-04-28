@@ -46,7 +46,7 @@ for output in model.outputs:
     name, _ = output.name.split('/')
     if 'penalty' in output.name:
         losses[name] = 'mse'
-        weights[name] = 0.01
+        weights[name] = 0.001
     else:
         losses[name] = 'categorical_crossentropy'
         metrics[name] = 'categorical_accuracy'
@@ -54,17 +54,10 @@ for output in model.outputs:
 
 model.compile(optimizer=optimizer(start_lr), loss=losses, metrics=metrics, loss_weights=weights)
 
-model.fit_generator(generator=base_generator(batch_size),
-                    steps_per_epoch=1024 // batch_size,
-                    validation_data=base_generator(batch_size, is_val=True),
-                    validation_steps=512 // batch_size,
-                    epochs=3000,
-                    callbacks=callbacks,
-                    verbose=1)
 
 model.fit(generator(batch_size),
           epochs=3000,
           verbose=1,
           callbacks=callbacks,
-          validation_data=,
+          validation_data=generator(batch_size, is_val=True),
           steps_per_epoch=512 // batch_size)
