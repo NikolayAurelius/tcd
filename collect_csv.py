@@ -19,7 +19,7 @@ print(len(lst))
 raws = os.listdir('raw_datasets')
 not_in_db = []
 for raw in raws:
-    for diagnose in ['sick', 'healthy']:
+    for diagnose in os.listdir(f'raw_datasets/{raw}'):
         not_in_db.extend(os.listdir(f'raw_datasets/{raw}/{diagnose}'))
 
 print(len(not_in_db))
@@ -32,7 +32,7 @@ print(len(not_in_db))
 
 paths_to_not_in_db = []
 for raw in raws:
-    for diagnose in ['sick', 'healthy']:
+    for diagnose in os.listdir(f'raw_datasets/{raw}'):
         filenames = os.listdir(f'raw_datasets/{raw}/{diagnose}')
         for filename in filenames:
             if filename in not_in_db:
@@ -274,6 +274,9 @@ i = 0
 j = 0
 k = 0
 
+print(__file__)
+
+
 for key in filenames_by_dir.keys():
     if len(filenames_by_dir[key]) < 3:
         df = df_nongeneric
@@ -284,27 +287,30 @@ for key in filenames_by_dir.keys():
         k = 0
 
     for filename in filenames_by_dir[key]:
-        dct = rows_by_filename.pop(filename)
-        df.loc[k] = [dct.pop('x'), dct.pop('y'), key]
-        k += 1
+        try:
+            dct = rows_by_filename.pop(filename)
+            df.loc[k] = [dct.pop('x'), dct.pop('y'), key]
+            k += 1
+        except Exception as er:
+            print(er, '.pop(filename)')
 
     if len(filenames_by_dir[key]) < 3:
         continue
 
-    X = np.array(list(df['big_X']))
+    X = np.array(list(df['big_x']))
     Y = np.array(list(df['main_target']))
 
-    with h5py.File(f'X_{key}.h5', 'w', libver='latest') as f:
-        f.create_dataset(f'X_{key}', X.shape, dtype='i', data=X, compression='lzf')
-    with h5py.File(f'Y_{key}.h5', 'w', libver='latest') as f:
-        f.create_dataset(f'Y_{key}', Y.shape, dtype='i', data=Y, compression='lzf')
+    with h5py.File(f'tcd/dataset/X_{key}.h5', 'w', libver='latest') as f:
+        f.create_dataset(f'X', X.shape, dtype='i', data=X, compression='lzf')
+    with h5py.File(f'tcd/dataset/Y_{key}.h5', 'w', libver='latest') as f:
+        f.create_dataset(f'Y', Y.shape, dtype='i', data=Y, compression='lzf')
 
     del df, X, Y
 
 X = np.array(list(df_nongeneric['big_x']))
 Y = np.array(list(df_nongeneric['main_target']))
 
-with h5py.File(f'X_<3.h5', 'w', libver='latest') as f:
-    f.create_dataset(f'X_<3', X.shape, dtype='i', data=X, compression='lzf')
-with h5py.File(f'Y_<3.h5', 'w', libver='latest') as f:
-    f.create_dataset(f'Y_<3', Y.shape, dtype='i', data=Y, compression='lzf')
+with h5py.File(f'tcd/dataset/X_<3.h5', 'w', libver='latest') as f:
+    f.create_dataset(f'X', X.shape, dtype='i', data=X, compression='lzf')
+with h5py.File(f'tcd/dataset/Y_<3.h5', 'w', libver='latest') as f:
+    f.create_dataset(f'Y', Y.shape, dtype='i', data=Y, compression='lzf')

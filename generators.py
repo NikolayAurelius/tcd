@@ -1,5 +1,7 @@
 import numpy as np
 from psycopg2 import connect, ProgrammingError
+import os
+import h5py
 
 
 def choice(filenames, curr_filenames):
@@ -137,6 +139,40 @@ def base_generator(batch_size, is_val=False, dtype=np.float32):
 
         xs.append(y)
         yield xs, ys
+
+
+def generator(batch_size, dtype=np.float32):
+    filenames = set(os.listdir('tcd/dataset'))
+
+    for filename in list(filenames):
+        if 'Y' in filename:
+            filenames.remove(filename)
+
+    while True:
+        np.random.shuffle(filenames)
+        i = 0
+        while i < batch_size:
+            filename = next(filenames)
+
+            path_X = f'tcd/dataset/{filename}'
+            path_Y = path_X.replace('X', 'Y')
+
+            with h5py.File(path_X) as f:
+                X = f['X']
+
+            with h5py.File(path_Y) as f:
+                Y = f['Y']
+
+
+
+
+
+
+
+
+
+        yield x, y
+
 
 
 #  xs, ys = next(base_generator(2))

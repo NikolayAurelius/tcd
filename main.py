@@ -2,7 +2,7 @@ from tensorflow.keras.callbacks import ReduceLROnPlateau, ModelCheckpoint, Early
     LearningRateScheduler
 from tensorflow.keras.optimizers import Adam, Nadam
 from .model import model
-from .generators import base_generator
+from .generators import base_generator, generator
 import os
 from time import sleep
 from google.colab import drive
@@ -61,3 +61,10 @@ model.fit_generator(generator=base_generator(batch_size),
                     epochs=3000,
                     callbacks=callbacks,
                     verbose=1)
+
+model.fit(generator(batch_size),
+          epochs=3000,
+          verbose=1,
+          callbacks=callbacks,
+          validation_data=,
+          steps_per_epoch=512 // batch_size)
