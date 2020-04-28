@@ -150,8 +150,11 @@ def generator(batch_size, dtype=np.float32):
 
     while True:
         np.random.shuffle(filenames)
-        i = 0
-        while i < batch_size:
+
+        x = []
+        y = []
+
+        while len(x) < batch_size:
             filename = next(filenames)
 
             path_X = f'tcd/dataset/{filename}'
@@ -163,14 +166,18 @@ def generator(batch_size, dtype=np.float32):
             with h5py.File(path_Y) as f:
                 Y = f['Y']
 
+            for k in range(X.shape[0]):
+                curr_x = X[k]
+                curr_x /= np.max(curr_x)
+                curr_x -= np.mean(curr_x)
 
+                x.append(curr_x)
+                y.append(Y[k])
 
+                if len(x) == batch_size:
+                    break
 
-
-
-
-
-
+        x, y = np.array(x), np.array(y)
         yield x, y
 
 
