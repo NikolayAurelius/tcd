@@ -22,29 +22,29 @@ kr = 0.005
 kr1 = kr / 50
 dropout_rate = 0.5
 
-q = super_Conv4D(2, (2, 2, 2, 2), activation='linear', dropout_rate=0.1, noise_rate=0.25, kernel_constraint=max_norm(1.25, axis=[0, 1, 2, 3]))(**x)
+q = super_Conv4D(2, (2, 2, 2, 2), activation='linear', dropout_rate=0.1, noise_rate=0.25)(**x)
 
 #########
-y = super_Conv4D(m, (2, 2, 2, 2), activation='relu', kernel_constraint=max_norm(1.25, axis=[0, 1, 2, 3]))(**q)
-y = super_Conv4D(m, (2, 2, 2, 2), activation='relu', batch_normalization=batch_normalization, kernel_constraint=max_norm(1.25, axis=[0, 1, 2, 3]))(**y)
+y = super_Conv4D(m, (2, 2, 2, 2), activation='relu')(**q)
+y = super_Conv4D(m, (2, 2, 2, 2), activation='relu', batch_normalization=batch_normalization)(**y)
 y = y
 
-y = super_Conv4D(2 * m, (2, 2, 2, 2), activation='relu', kernel_constraint=max_norm(1.25, axis=[0, 1, 2, 3]))(**y)
-y = super_Conv4D(2 * m, (2, 2, 2, 2), activation='relu', kernel_constraint=max_norm(1.25, axis=[0, 1, 2, 3]))(**y)
-y = super_Conv4D(2 * m, (2, 2, 2, 2), activation='relu', batch_normalization=batch_normalization, kernel_constraint=max_norm(1.25, axis=[0, 1, 2, 3]))(**y)
+y = super_Conv4D(2 * m, (2, 2, 2, 2), activation='relu')(**y)
+y = super_Conv4D(2 * m, (2, 2, 2, 2), activation='relu')(**y)
+y = super_Conv4D(2 * m, (2, 2, 2, 2), activation='relu', batch_normalization=batch_normalization)(**y)
 y = y
 
-y = super_Conv4D(3 * m, (2, 2, 2, 2), activation='relu', kernel_constraint=max_norm(1.25, axis=[0, 1, 2, 3]))(**y)
-y = super_Conv4D(3 * m, (2, 2, 2, 2), activation='relu', kernel_constraint=max_norm(1.25, axis=[0, 1, 2, 3]))(**y)
-y = super_Conv4D(3 * m, (2, 2, 2, 2), activation='relu', kernel_constraint=max_norm(1.25, axis=[0, 1, 2, 3]))(**y)
-y = super_Conv4D(3 * m, (2, 2, 2, 2), activation='relu', batch_normalization=batch_normalization, kernel_constraint=max_norm(1.25, axis=[0, 1, 2, 3]))(**y)
+y = super_Conv4D(3 * m, (2, 2, 2, 2), activation='relu')(**y)
+y = super_Conv4D(3 * m, (2, 2, 2, 2), activation='relu')(**y)
+y = super_Conv4D(3 * m, (2, 2, 2, 2), activation='relu')(**y)
+y = super_Conv4D(3 * m, (2, 2, 2, 2), activation='relu', batch_normalization=batch_normalization)(**y)
 y = y
 
-y = super_Conv4D(4 * m, (2, 2, 2, 2), activation='relu', kernel_constraint=max_norm(1.25, axis=[0, 1, 2, 3]))(**y)
-y = super_Conv4D(4 * m, (2, 2, 2, 2), activation='relu', kernel_constraint=max_norm(1.25, axis=[0, 1, 2, 3]))(**y)
-y = super_Conv4D(4 * m, (2, 2, 2, 2), activation='relu', kernel_constraint=max_norm(1.25, axis=[0, 1, 2, 3]))(**y)
-y = super_Conv4D(4 * m, (2, 2, 2, 2), activation='relu', kernel_constraint=max_norm(1.25, axis=[0, 1, 2, 3]))(**y)
-y = super_Conv4D(4 * m, (2, 2, 2, 2), activation='relu', batch_normalization=batch_normalization, kernel_constraint=max_norm(1.25, axis=[0, 1, 2, 3]))(**y)
+y = super_Conv4D(4 * m, (2, 2, 2, 2), activation='relu')(**y)
+y = super_Conv4D(4 * m, (2, 2, 2, 2), activation='relu')(**y)
+y = super_Conv4D(4 * m, (2, 2, 2, 2), activation='relu')(**y)
+y = super_Conv4D(4 * m, (2, 2, 2, 2), activation='relu')(**y)
+y = super_Conv4D(4 * m, (2, 2, 2, 2), activation='relu', batch_normalization=batch_normalization)(**y)
 y = y
 #########
 
@@ -55,8 +55,8 @@ y = super_Flatten()(**y)
 
 y1 = super_Dense(units=2, activation='softmax')(**y)
 
-y = super_Dense(units=20, activation='tanh', kernel_regularizer=l2(kr1))(**y)
-y = super_Dense(units=2, activation='softmax', kernel_regularizer=l2(kr1))(**y)
+y = super_Dense(units=20, activation='tanh')(**y)
+y = super_Dense(units=2, activation='softmax')(**y)
 lst_y = [y[key][0] for key in y.keys()]
 lst_y1 = [y1[key][0] for key in y1.keys()]
 
@@ -109,14 +109,14 @@ outputs = []
 for key in y.keys():
   outputs.extend(y[key])
 
-for key in y1.keys():
-  outputs.extend(y1[key])
+# for key in y1.keys():
+#   outputs.extend(y1[key])
 
 outputs.append(main0)
-outputs.append(main1)
+#outputs.append(main1)
 outputs.append(penalty_deviation0)
-outputs.append(penalty_deviation1)
-outputs.append(p)
+#outputs.append(penalty_deviation1)
+#outputs.append(p)
 
 model = Model(inputs=inputs, outputs=outputs[::-1])
 model.summary()

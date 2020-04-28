@@ -156,7 +156,7 @@ def generator(batch_size, is_val=False, dtype=np.float32):
             filenames.remove(filename)
     filenames = list(filenames)
     while True:
-        np.random.shuffle(filenames)
+        # np.random.shuffle(filenames)
 
         x = []
         y = []
@@ -170,14 +170,17 @@ def generator(batch_size, is_val=False, dtype=np.float32):
                 X = f['X'][:]
                 Y = f['Y'][:]
 
-
             indexes = list(range(X.shape[0]))
             np.random.shuffle(indexes)
 
             for k in indexes:
                 curr_x = X[k]
-                curr_x /= np.max(curr_x)
-                curr_x -= np.mean(curr_x)
+
+                # curr_x = curr_x / np.amax(curr_x)
+                # curr_x = curr_x - np.mean(curr_x)
+                curr_x = curr_x ** 4
+                curr_x = curr_x - np.mean(curr_x, axis=(0, 1))
+                curr_x = curr_x / (np.std(curr_x, axis=(0, 1)) + 1.0)
 
                 x.append(curr_x)
                 y.append(Y[k])
@@ -186,9 +189,16 @@ def generator(batch_size, is_val=False, dtype=np.float32):
                     break
 
         x, y = np.array(x, dtype=dtype), np.array(y, dtype=dtype)
+        x = [x[:, i, :, :, :, :] for i in range(18 * 8)]
+        x.append(y)
+
+        s = [np.zeros((batch_size, 2), dtype=dtype) for _ in range(1)]
+        for _ in range(9):
+            s.append(y)
+
+        y = s
+
         yield x, y
-
-
 
 #  xs, ys = next(base_generator(2))
 

@@ -16,11 +16,11 @@ print(len(lst))
 lst = set(lst)
 print(len(lst))
 
-raws = os.listdir('raw_datasets')
+raws = os.listdir('tcd/raw_datasets')
 not_in_db = []
 for raw in raws:
-    for diagnose in os.listdir(f'raw_datasets/{raw}'):
-        not_in_db.extend(os.listdir(f'raw_datasets/{raw}/{diagnose}'))
+    for diagnose in os.listdir(f'tcd/raw_datasets/{raw}'):
+        not_in_db.extend(os.listdir(f'tcd/raw_datasets/{raw}/{diagnose}'))
 
 print(len(not_in_db))
 not_in_db = set(not_in_db)
@@ -32,11 +32,11 @@ print(len(not_in_db))
 
 paths_to_not_in_db = []
 for raw in raws:
-    for diagnose in os.listdir(f'raw_datasets/{raw}'):
-        filenames = os.listdir(f'raw_datasets/{raw}/{diagnose}')
+    for diagnose in os.listdir(f'tcd/raw_datasets/{raw}'):
+        filenames = os.listdir(f'tcd/raw_datasets/{raw}/{diagnose}')
         for filename in filenames:
             if filename in not_in_db:
-                paths_to_not_in_db.append(f'raw_datasets/{raw}/{diagnose}/{filename}')
+                paths_to_not_in_db.append(f'tcd/raw_datasets/{raw}/{diagnose}/{filename}')
                 not_in_db.remove(filename)
 
 
