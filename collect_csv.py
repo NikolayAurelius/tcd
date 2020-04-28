@@ -180,7 +180,7 @@ import pandas
 df = pandas.DataFrame(columns=['big_x', 'main_target'])
 i = 0
 for elem in paths_to_not_in_db:
-    _, _, diagnose, filename = elem.split('/')
+    _, _, _, diagnose, filename = elem.split('/')
     dct_x = file_to_x(elem)
     x = dct_x.pop('x0')
 
