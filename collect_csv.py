@@ -173,7 +173,7 @@ def file_to_x(path):
             'rev_x9': rev_x9}
 
 
-#print(file_to_x(paths_to_not_in_db[0])['x0'][6:12, 6:12, 6:12, 6:12])
+# print(file_to_x(paths_to_not_in_db[0])['x0'][6:12, 6:12, 6:12, 6:12])
 
 import pandas
 
@@ -196,21 +196,115 @@ for elem in paths_to_not_in_db:
     df.loc[i] = [x, y]
     i += 1
 ####
-#save
-del df
-####
+# save
 
-df1 = pandas.DataFrame(columns=['big_x', 'main_target'])
-i = 0
+val_X = np.array(list(df['big_x']))
+print(type(val_X), val_X.shape)
+val_Y = np.array(list(df['main_target']))
+print(type(val_Y), val_Y.shape)
 
-for elem in lst: # filenames in db
-    sql = f"""SELECT * FROM mammologic_dataset WHERE filename = '{elem}'"""
+import h5py
+with h5py.File('val_X.h5', 'w', libver='latest') as f:
+    dset_X = f.create_dataset('val_X', val_X.shape, dtype='i', data=val_X, compression='lzf')
+with h5py.File('val_Y.h5', 'w', libver='latest') as f:
+    dset_Y = f.create_dataset('val_Y', val_Y.shape, dtype='i', data=val_Y, compression='lzf')
+
+
+del df, val_X, val_Y, dset_X, dset_Y
+
+sql = """SELECT DISTINCT number_of_dir FROM mammologic_dataset"""
+cursor.execute(sql)
+
+rows_by_filename = {filename: {'y': None, 'x0': None, 'x3': None, 'x6': None, 'x9': None, 'rev_x0': None,
+                               'rev_x3': None, 'rev_x6': None, 'rev_x9': None} for filename in lst}
+
+dir_by_filename = {filename: None for filename in lst}
+order = ['x0', 'x3', 'x6', 'x9', 'rev_x0', 'rev_x3', 'rev_x6', 'rev_x9']
+filenames_by_dir = {}
+
+for elem in list(cursor):
+    sql = f"""SELECT * FROM mammologic_dataset WHERE number_of_dir = '{elem[0]}'"""
     cursor.execute(sql)
-    #print(next(cursor))
-    for row in cursor:
-        identificator, filename, x, state, number, orig_dir, patient, is_left, main_target = row
 
-        print(identificator, state, main_target, is_left)
+    for row in cursor:
+        try:
+            identificator, filename, x, state, number, orig_dir, patient, is_left, main_target = row
+            rows_by_filename[filename][state] = x
+
+            y = np.zeros(2, dtype=np.int16)
+            # print(elem, main_target, type(main_target))
+            if main_target is True:
+                y[1] = 1
+            else:
+                y[0] = 1
+
+            rows_by_filename[filename]['y'] = y
+
+            c = True
+            for key in order:
+                c = c and rows_by_filename[filename][key] is not None
+
+            if c:
+                rows_by_filename[filename]['x'] = rows_by_filename[filename].pop('x0')
+
+                for key in order[1:]:
+                    rows_by_filename[filename]['x'] = np.concatenate((rows_by_filename[filename]['x'],
+                                                                      rows_by_filename[filename].pop(key)), axis=0)
+                rows_by_filename[filename]['x'] = np.expand_dims(rows_by_filename[filename]['x'], axis=4)
+
+            #dir_by_filename[filename] = f'{number}_{is_left}'
+
+            try:
+                filenames_by_dir[f'{number}_{is_left}'].append(filename)
+            except:
+                filenames_by_dir[f'{number}_{is_left}'] = [filename]
+        except Exception as er:
+            print(er)
+            continue
+
+
+        # print(identificator, state, main_target, is_left)
 
     print(elem)
-    break
+
+
+df_generic = pandas.DataFrame(columns=['big_x', 'main_target', 'number_of_dir_breast'])
+df_nongeneric = pandas.DataFrame(columns=['big_x', 'main_target', 'number_of_dir_breast'])
+i = 0
+j = 0
+k = 0
+
+for key in filenames_by_dir.keys():
+    if len(filenames_by_dir[key]) < 3:
+        df = df_nongeneric
+        k = i
+        i += len(filenames_by_dir[key])
+    else:
+        df = pandas.DataFrame(columns=['big_x', 'main_target', 'number_of_dir_breast'])
+        k = 0
+
+    for filename in filenames_by_dir[key]:
+        dct = rows_by_filename.pop(filename)
+        df.loc[k] = [dct.pop('x'), dct.pop('y'), key]
+        k += 1
+
+    if len(filenames_by_dir[key]) < 3:
+        continue
+
+    X = np.array(list(df['big_X']))
+    Y = np.array(list(df['main_target']))
+
+    with h5py.File(f'X_{key}.h5', 'w', libver='latest') as f:
+        f.create_dataset(f'X_{key}', X.shape, dtype='i', data=X, compression='lzf')
+    with h5py.File(f'Y_{key}.h5', 'w', libver='latest') as f:
+        f.create_dataset(f'Y_{key}', Y.shape, dtype='i', data=Y, compression='lzf')
+
+    del df, X, Y
+
+X = np.array(list(df_nongeneric['big_x']))
+Y = np.array(list(df_nongeneric['main_target']))
+
+with h5py.File(f'X_<3.h5', 'w', libver='latest') as f:
+    f.create_dataset(f'X_<3', X.shape, dtype='i', data=X, compression='lzf')
+with h5py.File(f'Y_<3.h5', 'w', libver='latest') as f:
+    f.create_dataset(f'Y_<3', Y.shape, dtype='i', data=Y, compression='lzf')
