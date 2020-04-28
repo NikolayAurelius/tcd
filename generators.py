@@ -143,10 +143,9 @@ def base_generator(batch_size, is_val=False, dtype=np.float32):
 
 def generator(batch_size, is_val=False, dtype=np.float32):
     if is_val:
-        with h5py.File('tcd/val_X.h5') as f:
-            val_X = f['val_X']
-        with h5py.File('tcd/val_Y.h5') as f:
-            val_Y = f['val_Y']
+        with h5py.File('tcd/val_set.h5') as f:
+            val_X = f['val_X'][:]
+            val_Y = f['val_Y'][:]
 
         return val_X, val_Y
 
@@ -155,7 +154,7 @@ def generator(batch_size, is_val=False, dtype=np.float32):
     for filename in list(filenames):
         if 'Y' in filename:
             filenames.remove(filename)
-
+    filenames = list(filenames)
     while True:
         np.random.shuffle(filenames)
 
@@ -163,16 +162,14 @@ def generator(batch_size, is_val=False, dtype=np.float32):
         y = []
 
         while len(x) < batch_size:
-            filename = next(filenames)
+            filename = np.random.choice(filenames)
 
-            path_X = f'tcd/dataset/{filename}'
-            path_Y = path_X.replace('X', 'Y')
+            path = f'tcd/dataset/{filename}'
 
-            with h5py.File(path_X) as f:
-                X = f['X']
+            with h5py.File(path) as f:
+                X = f['X'][:]
+                Y = f['Y'][:]
 
-            with h5py.File(path_Y) as f:
-                Y = f['Y']
 
             indexes = list(range(X.shape[0]))
             np.random.shuffle(indexes)

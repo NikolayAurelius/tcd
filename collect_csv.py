@@ -16,11 +16,11 @@ print(len(lst))
 lst = set(lst)
 print(len(lst))
 
-raws = os.listdir('tcd/raw_datasets')
+raws = os.listdir('raw_datasets')
 not_in_db = []
 for raw in raws:
-    for diagnose in os.listdir(f'tcd/raw_datasets/{raw}'):
-        not_in_db.extend(os.listdir(f'tcd/raw_datasets/{raw}/{diagnose}'))
+    for diagnose in os.listdir(f'raw_datasets/{raw}'):
+        not_in_db.extend(os.listdir(f'raw_datasets/{raw}/{diagnose}'))
 
 print(len(not_in_db))
 not_in_db = set(not_in_db)
@@ -32,11 +32,11 @@ print(len(not_in_db))
 
 paths_to_not_in_db = []
 for raw in raws:
-    for diagnose in os.listdir(f'tcd/raw_datasets/{raw}'):
-        filenames = os.listdir(f'tcd/raw_datasets/{raw}/{diagnose}')
+    for diagnose in os.listdir(f'raw_datasets/{raw}'):
+        filenames = os.listdir(f'raw_datasets/{raw}/{diagnose}')
         for filename in filenames:
             if filename in not_in_db:
-                paths_to_not_in_db.append(f'tcd/raw_datasets/{raw}/{diagnose}/{filename}')
+                paths_to_not_in_db.append(f'raw_datasets/{raw}/{diagnose}/{filename}')
                 not_in_db.remove(filename)
 
 
@@ -91,6 +91,7 @@ def get_I():
         a += 1
     return I
 
+order = ['x0', 'x3', 'x6', 'x9', 'rev_x0', 'rev_x3', 'rev_x6', 'rev_x9']
 
 I = get_I()
 
@@ -180,7 +181,10 @@ import pandas
 df = pandas.DataFrame(columns=['big_x', 'main_target'])
 i = 0
 for elem in paths_to_not_in_db:
-    _, _, _, diagnose, filename = elem.split('/')
+    if 'new_order' in elem:
+        continue
+
+    _, _, diagnose, filename = elem.split('/')
     dct_x = file_to_x(elem)
     x = dct_x.pop('x0')
 
@@ -204,68 +208,149 @@ val_Y = np.array(list(df['main_target']))
 print(type(val_Y), val_Y.shape)
 
 import h5py
-with h5py.File('val_X.h5', 'w', libver='latest') as f:
+with h5py.File('val_set.h5', 'w', libver='latest') as f:
     dset_X = f.create_dataset('val_X', val_X.shape, dtype='i', data=val_X, compression='lzf')
-with h5py.File('val_Y.h5', 'w', libver='latest') as f:
     dset_Y = f.create_dataset('val_Y', val_Y.shape, dtype='i', data=val_Y, compression='lzf')
 
 
 del df, val_X, val_Y, dset_X, dset_Y
 
-sql = """SELECT DISTINCT number_of_dir FROM mammologic_dataset"""
+
+sql = '''SELECT DISTINCT filename, main_target, is_left FROM mammologic_dataset'''
 cursor.execute(sql)
+target_breast_by_filename = {}
 
-rows_by_filename = {filename: {'y': None, 'x0': None, 'x3': None, 'x6': None, 'x9': None, 'rev_x0': None,
-                               'rev_x3': None, 'rev_x6': None, 'rev_x9': None} for filename in lst}
+for row in cursor:
+    filename, main_target, is_left = row
+    target_breast_by_filename[filename] = (main_target, is_left)
 
-dir_by_filename = {filename: None for filename in lst}
-order = ['x0', 'x3', 'x6', 'x9', 'rev_x0', 'rev_x3', 'rev_x6', 'rev_x9']
-filenames_by_dir = {}
 
-for elem in list(cursor):
-    sql = f"""SELECT * FROM mammologic_dataset WHERE number_of_dir = '{elem[0]}'"""
-    cursor.execute(sql)
+base_path = 'tcd/raw_datasets/new_order'
 
-    for row in cursor:
-        try:
-            identificator, filename, x, state, number, orig_dir, patient, is_left, main_target = row
-            rows_by_filename[filename][state] = x
+paths_by_number = {}
 
-            y = np.zeros(2, dtype=np.int16)
-            # print(elem, main_target, type(main_target))
-            if main_target is True:
-                y[1] = 1
-            else:
-                y[0] = 1
 
-            rows_by_filename[filename]['y'] = y
-
-            c = True
-            for key in order:
-                c = c and rows_by_filename[filename][key] is not None
-
-            if c:
-                rows_by_filename[filename]['x'] = rows_by_filename[filename].pop('x0')
-
-                for key in order[1:]:
-                    rows_by_filename[filename]['x'] = np.concatenate((rows_by_filename[filename]['x'],
-                                                                      rows_by_filename[filename].pop(key)), axis=0)
-                rows_by_filename[filename]['x'] = np.expand_dims(rows_by_filename[filename]['x'], axis=4)
-
-            #dir_by_filename[filename] = f'{number}_{is_left}'
-
-            try:
-                filenames_by_dir[f'{number}_{is_left}'].append(filename)
-            except:
-                filenames_by_dir[f'{number}_{is_left}'] = [filename]
-        except Exception as er:
-            print(er)
+for number in os.listdir(base_path):
+    for elem in os.listdir(f'{base_path}/{number}'):
+        if '.txt' in elem:
             continue
 
+        for jelem in os.listdir(f'{base_path}/{number}/{elem}'):
+            if jelem == 'measurements':
+                s = f'{base_path}/{number}/{elem}/measurements'
 
-        # print(identificator, state, main_target, is_left)
+                paths = [f'{s}/{filename}' for filename in os.listdir(s)]
+                try:
+                    paths_by_number[number].extend(paths)
+                except Exception as er:
+                    print(er)
+                    paths_by_number[number] = paths
 
-    print(elem)
+minus_filenames = []
+
+dataset_by_number_and_breast = {}
+
+for key in paths_by_number.keys():
+    X = []
+    Y = []
+
+    mt, il = None, None
+    for path in paths_by_number[key]:
+        filename = path.split('/')[-1]
+
+        if filename in minus_filenames:
+            print(filename, len(minus_filenames), 'minus')
+            continue
+        minus_filenames.append(filename)
+
+        dct_x = file_to_x(path)
+
+        x = dct_x.pop('x0')
+
+        for jkey in order[1:]:
+            x = np.concatenate((x, dct_x.pop(jkey)), axis=0)
+        x = np.expand_dims(x, axis=4)
+
+        try:
+            main_target, is_left = target_breast_by_filename[filename]
+        except KeyError as er:
+            print(er, 'KeyError from db')
+            continue
+
+        y = np.zeros(2, dtype=np.int16)
+        if main_target is True:
+            y[1] = 1
+        else:
+            y[0] = 1
+
+        try:
+            dataset_by_number_and_breast[f'{key}_{is_left}'].append({'x': x, 'y': y})
+            # dataset_by_number_and_breast[f'{key}_{is_left}']['y'].append(y)
+        except Exception as er:
+            print(er)
+            dataset_by_number_and_breast[f'{key}_{is_left}'] = [{'x': x, 'y': y}]
+
+# for key in dataset_by_number_and_breast.keys():
+#     if len(dataset_by_number_and_breast[key]['y']) < 3:
+#         pass
+#         continue
+#
+#
+
+
+# sql = """SELECT DISTINCT number_of_dir FROM mammologic_dataset"""
+# cursor.execute(sql)
+#
+# rows_by_filename = {filename: {'y': None, 'x0': None, 'x3': None, 'x6': None, 'x9': None, 'rev_x0': None,
+#                                'rev_x3': None, 'rev_x6': None, 'rev_x9': None} for filename in lst}
+#
+# dir_by_filename = {filename: None for filename in lst}
+# filenames_by_dir = {}
+#
+# for elem in list(cursor):
+#     sql = f"""SELECT * FROM mammologic_dataset WHERE number_of_dir = '{elem[0]}'"""
+#     cursor.execute(sql)
+#
+#     for row in cursor:
+#         try:
+#             identificator, filename, x, state, number, orig_dir, patient, is_left, main_target = row
+#             rows_by_filename[filename][state] = x
+#
+#             y = np.zeros(2, dtype=np.int16)
+#             # print(elem, main_target, type(main_target))
+#             if main_target is True:
+#                 y[1] = 1
+#             else:
+#                 y[0] = 1
+#
+#             rows_by_filename[filename]['y'] = y
+#
+#             c = True
+#             for key in order:
+#                 c = c and rows_by_filename[filename][key] is not None
+#
+#             if c:
+#                 rows_by_filename[filename]['x'] = rows_by_filename[filename].pop('x0')
+#
+#                 for key in order[1:]:
+#                     rows_by_filename[filename]['x'] = np.concatenate((rows_by_filename[filename]['x'],
+#                                                                       rows_by_filename[filename].pop(key)), axis=0)
+#                 rows_by_filename[filename]['x'] = np.expand_dims(rows_by_filename[filename]['x'], axis=4)
+#
+#             #dir_by_filename[filename] = f'{number}_{is_left}'
+#
+#             try:
+#                 filenames_by_dir[f'{number}_{is_left}'].append(filename)
+#             except:
+#                 filenames_by_dir[f'{number}_{is_left}'] = [filename]
+#         except Exception as er:
+#             print(er)
+#             continue
+#
+#
+#         # print(identificator, state, main_target, is_left)
+#
+#     print(elem)
 
 
 df_generic = pandas.DataFrame(columns=['big_x', 'main_target', 'number_of_dir_breast'])
@@ -277,32 +362,30 @@ k = 0
 print(__file__)
 
 
-for key in filenames_by_dir.keys():
-    if len(filenames_by_dir[key]) < 3:
+for key in dataset_by_number_and_breast.keys():
+    if len(dataset_by_number_and_breast[key]) < 3:
         df = df_nongeneric
         k = i
-        i += len(filenames_by_dir[key])
+        i += len(dataset_by_number_and_breast[key])
     else:
         df = pandas.DataFrame(columns=['big_x', 'main_target', 'number_of_dir_breast'])
         k = 0
 
-    for filename in filenames_by_dir[key]:
+    for dct in dataset_by_number_and_breast[key]:
         try:
-            dct = rows_by_filename.pop(filename)
             df.loc[k] = [dct.pop('x'), dct.pop('y'), key]
             k += 1
         except Exception as er:
             print(er, '.pop(filename)')
 
-    if len(filenames_by_dir[key]) < 3:
+    if len(dataset_by_number_and_breast[key]) < 3:
         continue
 
     X = np.array(list(df['big_x']))
     Y = np.array(list(df['main_target']))
 
-    with h5py.File(f'tcd/dataset/X_{key}.h5', 'w', libver='latest') as f:
+    with h5py.File(f'tcd/dataset/set_{key}.h5', 'w', libver='latest') as f:
         f.create_dataset(f'X', X.shape, dtype='i', data=X, compression='lzf')
-    with h5py.File(f'tcd/dataset/Y_{key}.h5', 'w', libver='latest') as f:
         f.create_dataset(f'Y', Y.shape, dtype='i', data=Y, compression='lzf')
 
     del df, X, Y
@@ -310,7 +393,7 @@ for key in filenames_by_dir.keys():
 X = np.array(list(df_nongeneric['big_x']))
 Y = np.array(list(df_nongeneric['main_target']))
 
-with h5py.File(f'tcd/dataset/X_<3.h5', 'w', libver='latest') as f:
+with h5py.File(f'tcd/dataset/set_<3.h5', 'w', libver='latest') as f:
     f.create_dataset(f'X', X.shape, dtype='i', data=X, compression='lzf')
-with h5py.File(f'tcd/dataset/Y_<3.h5', 'w', libver='latest') as f:
     f.create_dataset(f'Y', Y.shape, dtype='i', data=Y, compression='lzf')
+
