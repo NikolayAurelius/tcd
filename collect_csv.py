@@ -184,7 +184,7 @@ for elem in paths_to_not_in_db:
     if 'new_order' in elem:
         continue
 
-    _, _, diagnose, filename = elem.split('/')
+    diagnose, filename = elem.split('/')[-2:]
     dct_x = file_to_x(elem)
     x = dct_x.pop('x0')
 

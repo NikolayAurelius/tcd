@@ -33,10 +33,10 @@ def sch_f(epoch, rate):
 schedule = LearningRateScheduler(sch_f)
 
 callbacks = [learning_rate_reduction, saving, schedule]
-batch_size = 16
+batch_size = 32
 # TODO: Choice optimizer, start_lr model.train_on_batch
 
-start_lr = 0.1 ** 4
+start_lr = 0.1 ** 5
 optimizer = Adam
 
 losses = {}
@@ -47,7 +47,7 @@ for output in model.outputs:
     name, _ = output.name.split('/')
     if 'penalty' in output.name:
         losses[name] = 'mse'
-        weights[name] = 0.0001
+        weights[name] = 0.05
     else:
         losses[name] = 'categorical_crossentropy'
         metrics[name] = 'categorical_accuracy'
@@ -56,25 +56,25 @@ for output in model.outputs:
         if 'main' in output.name:
             weights[name] = 200.0
 
+model.load_weights('/content/drive/My Drive/renova/real_dataset/models/8170_epoch-38_loss-117.8359_main_c_a-0.7783.ckpt')
 model.compile(optimizer=optimizer(start_lr), loss=losses, metrics=metrics, loss_weights=weights)
 
-
-import h5py
-with h5py.File('tcd/val_set.h5') as f:
-    val_X = f['val_X'][:]
-    val_Y = f['val_Y'][:]
-# val_X = np.expand_dims(val_X, axis=5)
-
-val_X = val_X / np.amax(val_X)
-val_X = val_X - np.mean(val_X)
-
-val_X = [val_X[:, i, :, :, :, :] for i in range(18 * 8)]
-val_X.append(val_Y)
-
-s = [np.zeros((val_Y.shape[0], 2), dtype=np.float32) for _ in range(3)]
-for _ in range(18):
-    s.append(val_Y)
-val_Y = s
+# import h5py
+# with h5py.File('tcd/val_set.h5') as f:
+#     val_X = f['val_X'][:]
+#     val_Y = f['val_Y'][:]
+# # val_X = np.expand_dims(val_X, axis=5)
+#
+# val_X = val_X / np.amax(val_X)
+# val_X = val_X - np.mean(val_X)
+#
+# val_X = [val_X[:, i, :, :, :, :] for i in range(18 * 8)]
+# val_X.append(val_Y)
+#
+# s = [np.zeros((val_Y.shape[0], 2), dtype=np.float32) for _ in range(3)]
+# for _ in range(18):
+#     s.append(val_Y)
+# val_Y = s
 
 
 model.fit(generator(batch_size),
@@ -82,4 +82,4 @@ model.fit(generator(batch_size),
           verbose=1,
           callbacks=callbacks,
           validation_data=None,
-          steps_per_epoch=1024 // batch_size)
+          steps_per_epoch=2048 // batch_size)

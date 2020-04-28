@@ -143,7 +143,7 @@ def base_generator(batch_size, is_val=False, dtype=np.float32):
 
 def generator(batch_size, is_val=False, dtype=np.float32):
     if is_val:
-        with h5py.File('tcd/val_set.h5') as f:
+        with h5py.File('tcd/val_set.h5', 'r') as f:
             val_X = f['val_X'][:]
             val_Y = f['val_Y'][:]
 
@@ -166,7 +166,7 @@ def generator(batch_size, is_val=False, dtype=np.float32):
 
             path = f'tcd/dataset/{filename}'
 
-            with h5py.File(path) as f:
+            with h5py.File(path, 'r') as f:
                 X = f['X'][:]
                 Y = f['Y'][:]
 
