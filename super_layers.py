@@ -1,6 +1,6 @@
 import tensorflow as tf
 from tensorflow.keras.layers import Conv3D, Add, BatchNormalization, Activation, Flatten, Dropout, Concatenate, \
-    Dense, GaussianNoise, Maximum
+    Dense, GaussianNoise, Maximum, MaxPooling3D
 
 
 def create_shared_weights(conv1, convs, input_shape):
@@ -96,10 +96,21 @@ def super_MaxPooling4D(pool_size):
     def _res(npts_x0, npts_x3, npts_x6, npts_x9, npts_rev_x0, npts_rev_x3, npts_rev_x6, npts_rev_x9):
         npts = {'x0': npts_x0, 'x3': npts_x3, 'x6': npts_x6, 'x9': npts_x9, 'rev_x0': npts_rev_x0,
                 'rev_x3': npts_rev_x3, 'rev_x6': npts_rev_x6, 'rev_x9': npts_rev_x9}
+        _l1 = {key: [] for key in npts.keys()}
+        for i in range(len(npts['x0'])):
+            main_conv = MaxPooling3D((b, c, d))
+            shared_convs = [MaxPooling3D((b, c, d)) for _ in range(7)]
 
-        for key in npts.keys():
-            npts[key] = [Maximum()(npts[key][i:i + a]) for i in range(len(inputs[key]) - (a - 1))]
-        return {f'npts_{key}': npts[key] for key in npts.keys()}
+            for key in npts.keys():
+                x = npts[key][i]
+                if key == 'x0':
+                    _l1[key].append(main_conv(x))
+                else:
+                    _l1[key].append(shared_convs.pop()(x))
+
+        for key in _l1.keys():
+            _l1[key] = [Maximum()(_l1[key][i:i + a]) for i in range(0, len(_l1[key]) - (a - 1), a)]
+        return {f'npts_{key}': _l1[key] for key in _l1.keys()}
 
     return _res
 
@@ -108,7 +119,7 @@ def super_Concatenate():
     def _res(npts_x0, npts_x3, npts_x6, npts_x9, npts_rev_x0, npts_rev_x3, npts_rev_x6, npts_rev_x9):
         npts = {'x0': npts_x0, 'x3': npts_x3, 'x6': npts_x6, 'x9': npts_x9, 'rev_x0': npts_rev_x0,
                 'rev_x3': npts_rev_x3, 'rev_x6': npts_rev_x6, 'rev_x9': npts_rev_x9}
-        print(npts['x0'])
+        # print(npts['x0'])
         return {f'npts_{key}': [Concatenate(axis=-1)(npts[key])] for key in npts.keys()}
 
     return _res

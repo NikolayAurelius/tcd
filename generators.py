@@ -141,14 +141,45 @@ def base_generator(batch_size, is_val=False, dtype=np.float32):
         yield xs, ys
 
 
-def generator(batch_size, is_val=False, dtype=np.float32):
-    if is_val:
-        with h5py.File('tcd/val_set.h5', 'r') as f:
-            val_X = f['val_X'][:]
-            val_Y = f['val_Y'][:]
+def normalize_sample(curr_x):
+    curr_x = curr_x ** 6
+    curr_x = curr_x - np.mean(curr_x, axis=(0, 1))
+    curr_x = curr_x / (np.std(curr_x, axis=(0, 1)) + 1.0)
+    return curr_x
 
-        return val_X, val_Y
 
+def from_x_y_to_input_output(x, y, a, b, dtype):
+    x, y = np.array(x, dtype=dtype), np.array(y, dtype=dtype)
+    x = [x[:, i, :, :, :, :] for i in range(18 * 8)]
+    x.append(y)
+
+    s = [np.zeros((y.shape[0], 2), dtype=dtype) for _ in range(a)]
+    for _ in range(b):
+        s.append(y)
+
+    y = s
+    return x, y
+
+
+def get_validation(a, b, dtype=np.float32):
+    with h5py.File('tcd/val_set.h5', 'r') as f:
+        val_X = f['val_X'][:]
+        val_Y = f['val_Y'][:]
+
+    x, y = [], []
+
+    for k in range(val_X.shape[0]):
+        curr_x = val_X[k]
+
+        curr_x = normalize_sample(curr_x)
+
+        x.append(curr_x)
+        y.append(val_Y[k])
+
+    return from_x_y_to_input_output(x, y, a, b, dtype=dtype)
+
+
+def generator(batch_size, a, b, dtype=np.float32):
     filenames = set(os.listdir('tcd/dataset'))
 
     for filename in list(filenames):
@@ -156,10 +187,7 @@ def generator(batch_size, is_val=False, dtype=np.float32):
             filenames.remove(filename)
     filenames = list(filenames)
     while True:
-        # np.random.shuffle(filenames)
-
-        x = []
-        y = []
+        x, y = [], []
 
         while len(x) < batch_size:
             filename = np.random.choice(filenames)
@@ -176,11 +204,7 @@ def generator(batch_size, is_val=False, dtype=np.float32):
             for k in indexes:
                 curr_x = X[k]
 
-                # curr_x = curr_x / np.amax(curr_x)
-                # curr_x = curr_x - np.mean(curr_x)
-                curr_x = curr_x ** 4
-                curr_x = curr_x - np.mean(curr_x, axis=(0, 1))
-                curr_x = curr_x / (np.std(curr_x, axis=(0, 1)) + 1.0)
+                curr_x = normalize_sample(curr_x)
 
                 x.append(curr_x)
                 y.append(Y[k])
@@ -188,17 +212,4 @@ def generator(batch_size, is_val=False, dtype=np.float32):
                 if len(x) == batch_size:
                     break
 
-        x, y = np.array(x, dtype=dtype), np.array(y, dtype=dtype)
-        x = [x[:, i, :, :, :, :] for i in range(18 * 8)]
-        x.append(y)
-
-        s = [np.zeros((batch_size, 2), dtype=dtype) for _ in range(1)]
-        for _ in range(9):
-            s.append(y)
-
-        y = s
-
-        yield x, y
-
-#  xs, ys = next(base_generator(2))
-
+        yield from_x_y_to_input_output(x, y, a, b, dtype)

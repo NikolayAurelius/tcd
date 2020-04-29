@@ -1,8 +1,8 @@
 from tensorflow.keras.callbacks import ReduceLROnPlateau, ModelCheckpoint, EarlyStopping, Callback, \
     LearningRateScheduler
 from tensorflow.keras.optimizers import Adam, Nadam
-from .model import model
-from .generators import base_generator, generator
+from .model import create_super_model
+from .generators import base_generator, generator, get_validation
 import os
 from time import sleep
 from google.colab import drive
@@ -43,43 +43,30 @@ losses = {}
 metrics = {}
 weights = {}
 
+model, a, b = create_super_model()
+
+
 for output in model.outputs:
     name, _ = output.name.split('/')
     if 'penalty' in output.name:
         losses[name] = 'mse'
-        weights[name] = 0.05
+        weights[name] = 1.0
     else:
         losses[name] = 'categorical_crossentropy'
         metrics[name] = 'categorical_accuracy'
-        weights[name] = 1.0
+        weights[name] = 200.0
 
-        if 'main' in output.name:
-            weights[name] = 200.0
+        if 'main' in output.name and 'sub' not in output.name:
+            weights[name] = 1000.0
+        elif 'sub' in output.name:
+            weights[name] = 500.0
 
-model.load_weights('/content/drive/My Drive/renova/real_dataset/models/8170_epoch-38_loss-117.8359_main_c_a-0.7783.ckpt')
+# model.load_weights('/content/drive/My Drive/renova/real_dataset/models/8170_epoch-38_loss-117.8359_main_c_a-0.7783.ckpt')
 model.compile(optimizer=optimizer(start_lr), loss=losses, metrics=metrics, loss_weights=weights)
 
-# import h5py
-# with h5py.File('tcd/val_set.h5') as f:
-#     val_X = f['val_X'][:]
-#     val_Y = f['val_Y'][:]
-# # val_X = np.expand_dims(val_X, axis=5)
-#
-# val_X = val_X / np.amax(val_X)
-# val_X = val_X - np.mean(val_X)
-#
-# val_X = [val_X[:, i, :, :, :, :] for i in range(18 * 8)]
-# val_X.append(val_Y)
-#
-# s = [np.zeros((val_Y.shape[0], 2), dtype=np.float32) for _ in range(3)]
-# for _ in range(18):
-#     s.append(val_Y)
-# val_Y = s
-
-
-model.fit(generator(batch_size),
+model.fit(generator(batch_size, a, b),
           epochs=3000,
           verbose=1,
           callbacks=callbacks,
-          validation_data=None,
+          validation_data=get_validation(a, b),
           steps_per_epoch=2048 // batch_size)

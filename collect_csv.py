@@ -1,6 +1,8 @@
 from psycopg2 import connect
 import os
 import numpy as np
+import h5py
+import pandas
 
 conn = connect(host='161.35.19.170', database='renova_datasets', user='postgres', password='postgres')
 cursor = conn.cursor()
@@ -91,6 +93,7 @@ def get_I():
         a += 1
     return I
 
+
 order = ['x0', 'x3', 'x6', 'x9', 'rev_x0', 'rev_x3', 'rev_x6', 'rev_x9']
 
 I = get_I()
@@ -174,10 +177,6 @@ def file_to_x(path):
             'rev_x9': rev_x9}
 
 
-# print(file_to_x(paths_to_not_in_db[0])['x0'][6:12, 6:12, 6:12, 6:12])
-
-import pandas
-
 df = pandas.DataFrame(columns=['big_x', 'main_target'])
 i = 0
 for elem in paths_to_not_in_db:
@@ -199,16 +198,14 @@ for elem in paths_to_not_in_db:
 
     df.loc[i] = [x, y]
     i += 1
-####
-# save
+
 
 val_X = np.array(list(df['big_x']))
 print(type(val_X), val_X.shape)
 val_Y = np.array(list(df['main_target']))
 print(type(val_Y), val_Y.shape)
 
-import h5py
-with h5py.File('val_set.h5', 'w', libver='latest') as f:
+with h5py.File('tcd/val_set.h5', 'w', libver='latest') as f:
     dset_X = f.create_dataset('val_X', val_X.shape, dtype='i', data=val_X, compression='lzf')
     dset_Y = f.create_dataset('val_Y', val_Y.shape, dtype='i', data=val_Y, compression='lzf')
 
