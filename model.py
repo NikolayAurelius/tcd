@@ -12,9 +12,11 @@ tf.keras.backend.clear_session()
 
 # batch_normalization = True
 # m = 10
-kr = 0.1 ** 7
-# kr1 = kr / 50
+kr = 0.1 ** 1
+kr1 = 0.1 ** 1
 dropout_rate = 0.5
+fdropout_rate = 0.05
+fnoise_rate = 0.05
 
 
 
@@ -43,26 +45,28 @@ def init_dense_inputs(input_size):
 
 def power_model(m=9, activation='relu', number_gen=number_generator()):
     x = init_conv_inputs()
-    y = super_Conv4D(m, (2, 2, 2, 2), activation=activation, kernel_regularizer=l2(kr))(**x)
-    y = super_Conv4D(m, (2, 2, 2, 2), activation=activation, batch_normalization=True, kernel_regularizer=l2(kr))(**y)
+    x = super_Conv4D(2, (2, 2, 2, 2), 'linear', kernel_regularizer=l2(kr), bias_regularizer=l2(kr), dropout_rate=fdropout_rate, noise_rate=fnoise_rate)(**x)
+
+    y = super_Conv4D(m, (2, 2, 2, 2), activation=activation, kernel_regularizer=l2(kr), bias_regularizer=l2(kr))(**x)
+    y = super_Conv4D(m, (2, 2, 2, 2), activation=activation, batch_normalization=True, kernel_regularizer=l2(kr), bias_regularizer=l2(kr))(**y)
     y = y
 
-    y = super_Conv4D(2 * m, (2, 2, 2, 2), activation=activation, kernel_regularizer=l2(kr))(**y)
-    y = super_Conv4D(2 * m, (2, 2, 2, 2), activation=activation, kernel_regularizer=l2(kr))(**y)
-    y = super_Conv4D(2 * m, (2, 2, 2, 2), activation=activation, batch_normalization=True, kernel_regularizer=l2(kr))(**y)
+    y = super_Conv4D(2 * m, (2, 2, 2, 2), activation=activation, kernel_regularizer=l2(kr), bias_regularizer=l2(kr))(**y)
+    y = super_Conv4D(2 * m, (2, 2, 2, 2), activation=activation, kernel_regularizer=l2(kr), bias_regularizer=l2(kr))(**y)
+    y = super_Conv4D(2 * m, (2, 2, 2, 2), activation=activation, batch_normalization=True, kernel_regularizer=l2(kr), bias_regularizer=l2(kr))(**y)
     y = y
 
-    y = super_Conv4D(3 * m, (2, 2, 2, 2), activation=activation, kernel_regularizer=l2(kr))(**y)
-    y = super_Conv4D(3 * m, (2, 2, 2, 2), activation=activation, kernel_regularizer=l2(kr))(**y)
-    y = super_Conv4D(3 * m, (2, 2, 2, 2), activation=activation, kernel_regularizer=l2(kr))(**y)
-    y = super_Conv4D(3 * m, (2, 2, 2, 2), activation=activation, batch_normalization=True, kernel_regularizer=l2(kr))(**y)
+    y = super_Conv4D(3 * m, (2, 2, 2, 2), activation=activation, kernel_regularizer=l2(kr), bias_regularizer=l2(kr))(**y)
+    y = super_Conv4D(3 * m, (2, 2, 2, 2), activation=activation, kernel_regularizer=l2(kr), bias_regularizer=l2(kr))(**y)
+    y = super_Conv4D(3 * m, (2, 2, 2, 2), activation=activation, kernel_regularizer=l2(kr), bias_regularizer=l2(kr))(**y)
+    y = super_Conv4D(3 * m, (2, 2, 2, 2), activation=activation, batch_normalization=True, kernel_regularizer=l2(kr), bias_regularizer=l2(kr))(**y)
     y = y
 
-    y = super_Conv4D(4 * m, (2, 2, 2, 2), activation=activation, kernel_regularizer=l2(kr))(**y)
-    y = super_Conv4D(4 * m, (2, 2, 2, 2), activation=activation, kernel_regularizer=l2(kr))(**y)
-    y = super_Conv4D(4 * m, (2, 2, 2, 2), activation=activation, kernel_regularizer=l2(kr))(**y)
-    y = super_Conv4D(4 * m, (2, 2, 2, 2), activation=activation, kernel_regularizer=l2(kr))(**y)
-    y = super_Conv4D(4 * m, (2, 2, 2, 2), activation=activation, batch_normalization=True, kernel_regularizer=l2(kr))(**y)
+    y = super_Conv4D(4 * m, (2, 2, 2, 2), activation=activation, kernel_regularizer=l2(kr), bias_regularizer=l2(kr))(**y)
+    y = super_Conv4D(4 * m, (2, 2, 2, 2), activation=activation, kernel_regularizer=l2(kr), bias_regularizer=l2(kr))(**y)
+    y = super_Conv4D(4 * m, (2, 2, 2, 2), activation=activation, kernel_regularizer=l2(kr), bias_regularizer=l2(kr))(**y)
+    y = super_Conv4D(4 * m, (2, 2, 2, 2), activation=activation, kernel_regularizer=l2(kr), bias_regularizer=l2(kr))(**y)
+    y = super_Conv4D(4 * m, (2, 2, 2, 2), activation=activation, batch_normalization=True, kernel_regularizer=l2(kr), bias_regularizer=l2(kr))(**y)
     y = y
 
     y = super_Concatenate()(**y)
@@ -76,14 +80,17 @@ def power_model(m=9, activation='relu', number_gen=number_generator()):
 
 def third_model(m=10, activation='relu', number_gen=number_generator()):
     x = init_conv_inputs()
-    y2 = super_Conv4D(m, (2, 2, 2, 2), activation=activation, kernel_regularizer=l2(kr))(**x)
-    y2 = super_Conv4D(m, (2, 2, 2, 2), activation=activation, batch_normalization=True, kernel_regularizer=l2(kr))(**y2)
+
+    x = super_Conv4D(2, (2, 2, 2, 2), 'linear', kernel_regularizer=l2(kr), bias_regularizer=l2(kr), dropout_rate=fdropout_rate, noise_rate=fnoise_rate)(**x)
+
+    y2 = super_Conv4D(m, (2, 2, 2, 2), activation=activation, kernel_regularizer=l2(kr), bias_regularizer=l2(kr))(**x)
+    y2 = super_Conv4D(m, (2, 2, 2, 2), activation=activation, batch_normalization=True, kernel_regularizer=l2(kr), bias_regularizer=l2(kr))(**y2)
     y2 = super_Conv4D(m, (8, 8, 8, 8))(**y2)
 
-    y2 = super_Conv4D(2 * m, (2, 2, 2, 2), activation=activation, kernel_regularizer=l2(kr))(**y2)
-    y2 = super_Conv4D(2 * m, (2, 2, 2, 2), activation=activation, kernel_regularizer=l2(kr))(**y2)
-    y2 = super_Conv4D(2 * m, (2, 2, 2, 2), activation=activation, batch_normalization=True, kernel_regularizer=l2(kr))(**y2)
-    y2 = super_Conv4D(2 * m, (3, 3, 3, 3), kernel_regularizer=l2(kr))(**y2)
+    y2 = super_Conv4D(2 * m, (2, 2, 2, 2), activation=activation, kernel_regularizer=l2(kr), bias_regularizer=l2(kr))(**y2)
+    y2 = super_Conv4D(2 * m, (2, 2, 2, 2), activation=activation, kernel_regularizer=l2(kr), bias_regularizer=l2(kr))(**y2)
+    y2 = super_Conv4D(2 * m, (2, 2, 2, 2), activation=activation, batch_normalization=True, kernel_regularizer=l2(kr), bias_regularizer=l2(kr))(**y2)
+    y2 = super_Conv4D(2 * m, (3, 3, 3, 3), kernel_regularizer=l2(kr), bias_regularizer=l2(kr))(**y2)
 
     y2 = super_Concatenate()(**y2)
     y2 = super_Dropout(dropout_rate)(**y2)
@@ -96,13 +103,13 @@ def third_model(m=10, activation='relu', number_gen=number_generator()):
 
 def lenet_model(number_gen=number_generator()):
     x = init_conv_inputs()
-    y = super_Conv4D(6, (3, 3, 3, 3), activation='tanh', kernel_regularizer=l2(kr))(**x)
+    y = super_Conv4D(6, (3, 3, 3, 3), activation='tanh', kernel_regularizer=l2(kr), bias_regularizer=l2(kr))(**x)
     y = super_MaxPooling4D((2, 2, 2, 2))(**y)
 
-    y = super_Conv4D(16, (3, 3, 3, 3), activation='tanh', kernel_regularizer=l2(kr))(**y)
+    y = super_Conv4D(16, (3, 3, 3, 3), activation='tanh', kernel_regularizer=l2(kr), bias_regularizer=l2(kr))(**y)
     y = super_MaxPooling4D((2, 2, 2, 2))(**y)
 
-    y = super_Conv4D(90, (2, 2, 2, 2), activation='tanh', kernel_regularizer=l2(kr))(**y)
+    y = super_Conv4D(90, (2, 2, 2, 2), activation='tanh', kernel_regularizer=l2(kr), bias_regularizer=l2(kr))(**y)
 
     y = super_Concatenate()(**y)
     y = super_Dropout(dropout_rate)(**y)
@@ -124,8 +131,8 @@ def full_lenet_model(number_gen=number_generator()):
 
 def duble_dense(input_size, units=20, number_gen=number_generator()):
     x = init_dense_inputs(input_size)
-    y = super_Dense(units=units, activation='tanh')(**x)
-    y = super_Dense(units=2, activation='softmax')(**y)
+    y = super_Dense(units=units, activation='tanh', kernel_regularizer=l2(kr1), bias_regularizer=l2(kr1))(**x)
+    y = super_Dense(units=2, activation='softmax', kernel_regularizer=l2(kr1), bias_regularizer=l2(kr1))(**y)
     return Model(inputs=[x[key] for key in x.keys()],
                  outputs=[y[key] for key in y.keys()],
                  name=f'duble_dense_{next(number_gen)}')
@@ -133,14 +140,14 @@ def duble_dense(input_size, units=20, number_gen=number_generator()):
 
 def duble_triple_dense(input_size, units0=20, units1=10, number_gen=number_generator()):
     x = init_dense_inputs(input_size)
-    y = super_Dense(units=units0, activation='tanh')(**x)
-    y1 = super_Dense(units=units1, activation='tanh')(**y)
+    y = super_Dense(units=units0, activation='tanh', kernel_regularizer=l2(kr), bias_regularizer=l2(kr))(**x)
+    y1 = super_Dense(units=units1, activation='tanh', kernel_regularizer=l2(kr), bias_regularizer=l2(kr))(**y)
 
     for key in y1.keys():
         y1[key].extend(y[key])
 
     y = super_Concatenate()(**y1)
-    y = super_Dense(units=2, activation='softmax')(**y)
+    y = super_Dense(units=2, activation='softmax', kernel_regularizer=l2(kr), bias_regularizer=l2(kr))(**y)
     return Model(inputs=[x[key] for key in x.keys()],
                  outputs=[y[key] for key in y.keys()],
                  name=f'duble_triple_dense_{next(number_gen)}')
@@ -186,90 +193,90 @@ def create_super_model():
     x = init_conv_inputs()
     y_true_npt = Input((2,))
 
-    m1 = power_model(9, 'relu')
+    m1 = power_model(7, 'relu')
     m1 = duble_dense(input_size=m1.outputs[0].shape[-1], units=20)(m1(x))
     m1 = [elem[0] for elem in m1]
     main1 = Average(name='submain1')(m1)
     penalty_deviation1 = Lambda(penalty_deviation_func, name='penalty_deviation1')(m1)
 
-    m2 = power_model(8, 'relu')
+    m2 = power_model(6, 'relu')
     m2 = duble_dense(input_size=m2.outputs[0].shape[-1], units=20)(m2(x))
     m2 = [elem[0] for elem in m2]
     main2 = Average(name='submain2')(m2)
     penalty_deviation2 = Lambda(penalty_deviation_func, name='penalty_deviation2')(m2)
 
-    m3 = power_model(9, 'relu')
+    m3 = power_model(7, 'tanh')
     m3 = duble_triple_dense(input_size=m3.outputs[0].shape[-1], units0=20, units1=10)(m3(x))
     m3 = [elem[0] for elem in m3]
     main3 = Average(name='submain3')(m3)
     penalty_deviation3 = Lambda(penalty_deviation_func, name='penalty_deviation3')(m3)
 
-    p1 = penalty_equals_error()([main1, main2, y_true_npt])
-    p2 = penalty_equals_error()([main1, main3, y_true_npt])
-    p3 = penalty_equals_error()([main2, main3, y_true_npt])
+    # p1 = penalty_equals_error()([main1, main2, y_true_npt])
+    # p2 = penalty_equals_error()([main1, main3, y_true_npt])
+    # p3 = penalty_equals_error()([main2, main3, y_true_npt])
 
-    q1 = full_lenet_model()(x)
-    q1 = [elem[0] for elem in q1]
-    main4 = Average(name='submain4')(q1)
-    penalty_deviation4 = Lambda(penalty_deviation_func, name='penalty_deviation4')(q1)
+    # q1 = full_lenet_model()(x)
+    # q1 = [elem[0] for elem in q1]
+    # main4 = Average(name='submain4')(q1)
+    # penalty_deviation4 = Lambda(penalty_deviation_func, name='penalty_deviation4')(q1)
+    #
+    # q2 = lenet_model()
+    # q2 = duble_triple_dense(q2.outputs[0].shape[-1], units0=20, units1=10)(q2(x))
+    # q2 = [elem[0] for elem in q2]
+    # main5 = Average(name='submain5')(q2)
+    # penalty_deviation5 = Lambda(penalty_deviation_func, name='penalty_deviation5')(q2)
+    #
+    # q3 = lenet_model()
+    # q3 = duble_triple_dense(q3.outputs[0].shape[-1], units0=30, units1=5)(q3(x))
+    # q3 = [elem[0] for elem in q3]
+    # main6 = Average(name='submain6')(q3)
+    # penalty_deviation6 = Lambda(penalty_deviation_func, name='penalty_deviation6')(q3)
+    #
+    # p4 = penalty_equals_error()([main4, main5, y_true_npt])
+    # p5 = penalty_equals_error()([main4, main6, y_true_npt])
+    # p6 = penalty_equals_error()([main5, main6, y_true_npt])
 
-    q2 = lenet_model()
-    q2 = duble_triple_dense(q2.outputs[0].shape[-1], units0=20, units1=10)(q2(x))
-    q2 = [elem[0] for elem in q2]
-    main5 = Average(name='submain5')(q2)
-    penalty_deviation5 = Lambda(penalty_deviation_func, name='penalty_deviation5')(q2)
-
-    q3 = lenet_model()
-    q3 = duble_triple_dense(q3.outputs[0].shape[-1], units0=30, units1=5)(q3(x))
-    q3 = [elem[0] for elem in q3]
-    main6 = Average(name='submain6')(q3)
-    penalty_deviation6 = Lambda(penalty_deviation_func, name='penalty_deviation6')(q3)
-
-    p4 = penalty_equals_error()([main4, main5, y_true_npt])
-    p5 = penalty_equals_error()([main4, main6, y_true_npt])
-    p6 = penalty_equals_error()([main5, main6, y_true_npt])
-
-    g1 = third_model(9, 'relu')
+    g1 = third_model(7, 'tanh')
     g1 = duble_dense(input_size=g1.outputs[0].shape[-1], units=20)(g1(x))
     g1 = [elem[0] for elem in g1]
     main7 = Average(name='submain7')(g1)
     penalty_deviation7 = Lambda(penalty_deviation_func, name='penalty_deviation7')(g1)
 
-    g2 = third_model(8, 'relu')
+    g2 = third_model(6, 'relu')
     g2 = duble_dense(input_size=g2.outputs[0].shape[-1], units=20)(g2(x))
     g2 = [elem[0] for elem in g2]
     main8 = Average(name='submain8')(g2)
     penalty_deviation8 = Lambda(penalty_deviation_func, name='penalty_deviation8')(g2)
 
-    g3 = third_model(9, 'relu')
+    g3 = third_model(7, 'relu')
     g3 = duble_triple_dense(input_size=g3.outputs[0].shape[-1], units0=20, units1=10)(g3(x))
     g3 = [elem[0] for elem in g3]
     main9 = Average(name='submain9')(g3)
     penalty_deviation9 = Lambda(penalty_deviation_func, name='penalty_deviation9')(g3)
 
-    p7 = penalty_equals_error()([main7, main8, y_true_npt])
-    p8 = penalty_equals_error()([main7, main9, y_true_npt])
-    p9 = penalty_equals_error()([main8, main9, y_true_npt])
+    # p7 = penalty_equals_error()([main7, main8, y_true_npt])
+    # p8 = penalty_equals_error()([main7, main9, y_true_npt])
+    # p9 = penalty_equals_error()([main8, main9, y_true_npt])
 
     true_main1 = Average(name='main1')([main1, main2, main3])
-    true_main2 = Average(name='main2')([main4, main5, main6])
+    # true_main2 = Average(name='main2')([main4, main5, main6])
     true_main3 = Average(name='main3')([main7, main8, main9])
 
     true_main = Average(name='main')([true_main1, true_main2, true_main3])
 
     pairs_lst = []
 
-    for elem in [main1, main2, main3]:
-        for jelem in [main4, main5, main6]:
-            pairs_lst.append([elem, jelem])
+    # for elem in [main1, main2, main3]:
+    #     for jelem in [main4, main5, main6]:
+    #         pairs_lst.append([elem, jelem])
 
     for elem in [main1, main2, main3]:
         for jelem in [main7, main8, main9]:
             pairs_lst.append([elem, jelem])
 
-    for elem in [main4, main5, main6]:
-        for jelem in [main7, main8, main9]:
-            pairs_lst.append([elem, jelem])
+    # for elem in [main4, main5, main6]:
+    #     for jelem in [main7, main8, main9]:
+    #         pairs_lst.append([elem, jelem])
 
     p_lst = []
     for pairs in pairs_lst:
@@ -285,25 +292,27 @@ def create_super_model():
     outputs.append(penalty_deviation1)
     outputs.append(penalty_deviation2)
     outputs.append(penalty_deviation3)
-    outputs.append(p1)
-    outputs.append(p2)
-    outputs.append(p3)
-
-    outputs.append(penalty_deviation4)
-    outputs.append(penalty_deviation5)
-    outputs.append(penalty_deviation6)
-    outputs.append(p4)
-    outputs.append(p5)
-    outputs.append(p6)
+    # outputs.append(p1)
+    # outputs.append(p2)
+    # outputs.append(p3)
+    #
+    # outputs.append(penalty_deviation4)
+    # outputs.append(penalty_deviation5)
+    # outputs.append(penalty_deviation6)
+    # outputs.append(p4)
+    # outputs.append(p5)
+    # outputs.append(p6)
 
     outputs.append(penalty_deviation7)
     outputs.append(penalty_deviation8)
     outputs.append(penalty_deviation9)
-    outputs.append(p7)
-    outputs.append(p8)
-    outputs.append(p9)
+    # outputs.append(p7)
+    # outputs.append(p8)
+    # outputs.append(p9)
 
     outputs.extend(p_lst)
+
+    outputs = [Average('penalties')(outputs)]
 
     a = len(outputs)
 

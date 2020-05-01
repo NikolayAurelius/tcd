@@ -6,7 +6,6 @@ from .generators import base_generator, generator, get_validation
 import os
 from time import sleep
 from google.colab import drive
-import numpy as np
 
 while True:
     try:
@@ -33,7 +32,7 @@ def sch_f(epoch, rate):
 schedule = LearningRateScheduler(sch_f)
 
 callbacks = [learning_rate_reduction, saving, schedule]
-batch_size = 32
+batch_size = 20
 # TODO: Choice optimizer, start_lr model.train_on_batch
 
 start_lr = 0.1 ** 5
@@ -54,12 +53,12 @@ for output in model.outputs:
     else:
         losses[name] = 'categorical_crossentropy'
         metrics[name] = 'categorical_accuracy'
-        weights[name] = 200.0
+        weights[name] = 20000.0
 
         if 'main' in output.name and 'sub' not in output.name:
-            weights[name] = 1000.0
+            weights[name] = 40000.0
         elif 'sub' in output.name:
-            weights[name] = 500.0
+            weights[name] = 30000.0
 
 # model.load_weights('/content/drive/My Drive/renova/real_dataset/models/8170_epoch-38_loss-117.8359_main_c_a-0.7783.ckpt')
 model.compile(optimizer=optimizer(start_lr), loss=losses, metrics=metrics, loss_weights=weights)
