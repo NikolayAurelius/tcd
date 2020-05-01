@@ -262,7 +262,7 @@ def create_super_model():
     # true_main2 = Average(name='main2')([main4, main5, main6])
     true_main3 = Average(name='main3')([main7, main8, main9])
 
-    true_main = Average(name='main')([true_main1, true_main2, true_main3])
+    true_main = Average(name='main')([true_main1, true_main3])
 
     pairs_lst = []
 
